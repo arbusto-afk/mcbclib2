@@ -1,0 +1,94 @@
+ while(1) {
+        char * tmpptr = recvBuffer + currentBufDim;
+        int bytes_received = simpleSocket_receiveSocket(sockfd, tmpptr, BUFDIM);
+        currentBufDim += bytes_received;
+        if(bytes_received > 0){
+         //   printf("Received %d bytes\n", bytes_received);
+      //   int consumedBytes = packetDefinitions_readPacketFromBuffer(recvBuffer, currentBufDim, &c , ptr);
+        //    currentBufDim -= consumedBytes;
+
+//         if(consumedBytes != 0) {
+//             ptr++;
+//             memmove(recvBuffer, recvBuffer + consumedBytes, currentBufDim);
+//         }
+        } else if (bytes_received == 0){
+            printf("Connection closed by server");
+            break;
+
+        } else{
+            perror("Recv error:");
+            break;
+        }
+
+    }
+
+int main(void) {
+    const char * hostname = "ignacioFerrero.aternos.me";
+    int port = 57188;
+    simpleSocket_initialize();
+
+    int sockfd = simpleSocket_setSocket(hostname, 57188);
+    if (sockfd < 0) {
+        fprintf(stderr, "Failed to connect to server\n");
+        simpleSocket_cleanup();
+        return 1;
+    }
+
+    packet_t handshakePacket = createHandShakePacket(340, hostname,port,2);
+    packet_t loginPacket = createLoginPacket("Arbusto1298");
+    simpleSocket_send(sockfd, (char*)handshakePacket.seq, handshakePacket.dim);
+    simpleSocket_send(sockfd, (char*)loginPacket.seq, loginPacket.dim);
+
+    client c;
+    c.compressionTreshold = -1;
+
+    unsigned char recvBuffer[BUFDIM] = {0};
+    int currentBufDim = 0;
+
+    int packetIds[150];
+    for(int i = 0; i< 150; i++)
+        packetIds[i] = -1;
+
+    int* ptr = packetIds;
+
+    file_io_write_buffer_to_file("", recvBuffer, currentBufDim);
+
+    simpleSocket_close(sockfd);
+    simpleSocket_cleanup();
+    // Close the socket
+
+    freep(&handshakePacket);
+    freep(&loginPacket);
+    return 0;
+}
+/
+///
+/
+/
+/
+    /*
+            uint8_t * uncSeq = malloc(uncompressedPacketLen.value);
+            int dim;
+            int result = uncompress(uncSeq, &dim, uncompressedPacketLen.byteAfterEnd, packetLen.value - uncompressedPacketLen.byteSize);
+         //  int result = 1;
+            switch (result) {
+                case Z_OK:
+                    printf("Decompression successful, decompressed data length: %lu\n", dim);
+
+                case Z_MEM_ERROR:
+                    printf("Not enough memory for decompression\n");
+                    // Handle memory allocation issues here
+
+                case Z_BUF_ERROR:
+                    printf("Output buffer was too small. Provided size: %lu, needed size: %lu\n", dim, packetLen.value - uncompressedPacketLen.byteSize);
+                    // Handle buffer size issues here, e.g., reallocate a larger buffer and retry
+
+                case Z_DATA_ERROR:
+                    printf("Input data is corrupted or incomplete\n");
+                    // Handle corrupted data issues here
+
+                default:
+                    printf("Unknown error occurred during decompression: %d\n", result);
+            }
+
+            printf("sus\n");*/
